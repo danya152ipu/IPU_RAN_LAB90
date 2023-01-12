@@ -23,9 +23,9 @@ class Polygon2:
 
     def drawPolygon(self,color):
         for i in range(len(self.coords) - 1):
-            pygame.draw.line(self.dis, color, self.coords[i], self.coords[i + 1], 2)
+            pygame.draw.line(self.dis, color, self.coords[i], self.coords[i + 1], 5)
             if i == len(self.coords) - 2:
-                pygame.draw.line(self.dis, color, self.coords[i + 1], self.coords[0], 2)
+                pygame.draw.line(self.dis, color, self.coords[i + 1], self.coords[0], 5)
         # pygame.display.update()
 
 
@@ -114,6 +114,7 @@ class Polygon2:
             if coordR[0] > xMax:
                 line += 1
                 coordR = [xMin + wx/2,yMin + (line + 1/2)*wy]
+
 
         return(coordAll,line,yMin + wy/2,maskaCoord)
 

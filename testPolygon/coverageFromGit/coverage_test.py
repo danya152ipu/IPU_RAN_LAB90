@@ -107,7 +107,7 @@ def plot_map(target_map, trajectory, map_name="map", params_str=""):
     plt.title("Coverage Path Planning - {}\n{}".format(map_name, params_str))
     plt.tight_layout()
     plt.show()
-    fig.savefig("output_images/{}.png".format(map_name), bbox_inches='tight')
+    # fig.savefig("output_images/{}.png".format(map_name), bbox_inches='tight')
 
 
 #if __name__ == "__main__":
@@ -176,4 +176,6 @@ def getOptimalPath(maska):
         "\nList of coordinates of the best path: [map:{}, initial orientation: {} ({}), coverage path Heuristic:{}]".format(
             maps[0], cp.movement_name[compare_tb[0][1]], compare_tb[0][1], compare_tb[0][0]))
     print(compare_tb[0][6])
-    print("\n\n")
+
+    return compare_tb[0][6]
+    # print("\n\n")

@@ -1,103 +1,19 @@
-from Polygon import *
-import pygame
-from GeneticAlg import *
-from coverageFromGit.coverage_test import *
-import time
+"""
+Distance/Path Transform Wavefront Coverage Path Planner
+
+author: Todd Tang
+paper: Planning paths of complete coverage of an unstructured environment
+         by a mobile robot - Zelinsky et.al.
+link: http://pinkwink.kr/attachment/cfile3.uf@1354654A4E8945BD13FE77.pdf
+"""
 
 import os
 import sys
 
+
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy import ndimage
-
-
-pygame.init()
-WIDTH = 800
-HEIGHT = 600
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-RED = (255, 0, 0)
-GREEN = (0, 255, 0)
-YELLOW = (255, 215, 0)
-pygame.display.set_caption("flyby")
-FPS = 15
-radiusField = 15
-BATTERY_PATH = 25
-clock = pygame.time.Clock()
-kvadrSpeed = 5
-coords = []
-wx = 40 # ширина углового поля
-wy = 20  # высота углового поля
-#
-# coords.append((float(50), float(HEIGHT-100)))
-# coords.append((float(150), float(HEIGHT-150)))
-# coords.append((float(450), float(HEIGHT-300)))
-# coords.append((float(100), float(HEIGHT-250)))
-# coords.append((float(30), float(HEIGHT-150)))
-# coords.append((float(50), float(HEIGHT-90)))
-
-# coords.append((float(50), float(HEIGHT-100)))
-# coords.append((float(70), float(HEIGHT-100)))
-# coords.append((float(110), float(HEIGHT-300)))
-# coords.append((float(50), float(HEIGHT-300)))
-
-
-
-
-coords.append((float(50), float(HEIGHT-150)))
-coords.append((float(150), float(HEIGHT-120)))
-coords.append((float(450), float(HEIGHT-400)))
-coords.append((float(200), float(HEIGHT-450)))
-coords.append((float(120), float(HEIGHT-250)))
-coords.append((float(60), float(HEIGHT-200)))
-
-# print("Введите количество точек, задающих исследуемую область")
-# amountPoints = int(input())
-# for i in range(amountPoints):
-#     print("Введите x", i)
-#     x = input()
-#     print("Введите y",i)
-#     y = input()
-#     coords.append((int(x), int(y)))
-
-dis = pygame.display.set_mode((WIDTH, HEIGHT))
-game_over = False
-area = Polygon2(coords,dis)
-
-since = time.perf_counter()
-popSize=10
-mutationRate=0.05
-
-# points = geneticAlgorithm(population=area.drawRectangularGrid(wx,wy), popSize=popSize, eliteSize=2, mutationRate=mutationRate, generations=5000)
-# until = time.perf_counter()
-
-points,line,yForStr,maskaCoord = area.drawRectangularGrid(wx,wy)
-maskaCoord = np.array(maskaCoord)
-maskaCoord = np.reshape(maskaCoord,(line,int(maskaCoord.shape[0]/line)))
-img = maskaCoord.copy()
-print(img)
-for j in range(maskaCoord.shape[1]):
-    if maskaCoord[0][j] == 0:
-        maskaCoord[0][j] = 2
-        break
-start = j
-for j in range(maskaCoord.shape[1]):
-    if maskaCoord[maskaCoord.shape[0]-1][j] == 0:
-        maskaCoord[0][j] = 2
-        break
-goal = j
-
-
-
-points = np.array(points)
-points = np.reshape(points,(line,int(points.shape[0]/line)))
-yForStr = np.linspace(yForStr,yForStr+line*wy,line+1) #исправить
-#https://github.com/rodriguesrenato/coverage-path-planning
-# bestPath = getOptimalPath(maskaCoord)
-
-
-
 
 do_animation = True
 
@@ -255,9 +171,7 @@ def wavefront(transform_matrix, start, goal):
 def visualize_path(grid_map, start, goal, path):  # pragma: no cover
     oy, ox = start
     gy, gx = goal
-    # px, py = np.transpose(np.flipud(np.fliplr(path)))
-
-    px,py = np.transpose(np.fliplr(path))
+    px, py = np.transpose(np.flipud(np.fliplr(path)))
 
     if not do_animation:
         plt.imshow(grid_map, cmap='Greys')
@@ -283,125 +197,27 @@ def visualize_path(grid_map, start, goal, path):  # pragma: no cover
 
 
 # def main():
-#     dir_path = os.path.dirname(os.path.realpath(__file__))
-#
-#     img = plt.imread(os.path.join(dir_path, 'map', 'test.png'))
-#     img = 1 - img  # revert pixel values
-#     print(img.shape)
+    # dir_path = os.path.dirname(os.path.realpath(__file__))
+    #
+    #
+    # img = plt.imread(os.path.join(dir_path, 'map', 'test.png'))
+    # img = 1 - img  # revert pixel values
 
-goal = (maskaCoord.shape[0]-1, goal)
-start = (0,start)
 
-print(img.shape)
+goal = (43, 5)  #start
+start = (0, 10) # goal
+
     # distance transform wavefront
 DT = transform(img, goal, transform_type='distance')
 DT_path = wavefront(DT, start, goal)
 
-print(f'DT_PATH: {DT_path}')
-path_cost = 0
-recharge = []
-add_list = []
-for i in range(len(DT_path)-1):
-    if (abs(DT_path[i+1][0] - DT_path[i][0]) == 1) and (abs(DT_path[i+1][1] - DT_path[i][1]) == 1):
-        add = np.sqrt(2)
-        add_list.append(add)
-        path_cost+=add
-    else:
-        add = 1
-        add_list.append(add)
-        path_cost+=add
-    if path_cost >=BATTERY_PATH:
-        DT_path1 = DT_path[:i + 1].copy()
-        print(DT_path[i])
-        bol = False
-        for xy in DT_path1[::-1]:
-            if bol == True:
-                break
-            else:
-                for el in img[xy[0] - 1:xy[0] + 2, xy[1] - 1:xy[1] + 2]:
-                    if bol == True:
-                        break
-                    else:
-                        for el2 in el:
-                            if el2 == 1:
-                                recharge.append(xy)
-                                bol = True
-                                if bol:
-                                    break
-        index_recharge = DT_path.index(recharge[-1])
-        path_cost = 0
-        if index_recharge-i != 0:
-            last_added_numbers = add_list[-abs(index_recharge-i):]
-            for num in last_added_numbers:
-                path_cost += num
-
-
-# bol = False
-# for xy in DT_path1[::-1]:
-#     if bol == True:
-#         break
-#     else:
-#         for el in img[xy[0] - 1:xy[0] + 2, xy[1] - 1:xy[1] + 2]:
-#             if bol == True:
-#                 break
-#             else:
-#                 for el2 in el:
-#                     if el2 == 1:
-#                         recharge.append(xy)
-#                         bol = True
-#                         break
-img_with_recharge = img.copy()
-#
-# for el in DT_path1[:DT_path1.index((4,6))]: # change index to recharge
-#     img_with_recharge[el[0]][el[1]] = 1
-# PT2 = transform(img_with_recharge,goal)
-# PT2_path = wavefront(PT2, (4,6), goal)
-# print(PT2_path)
-
-
-
-# visualize_path(img, start, goal, DT_path)
-
+visualize_path(img, start, goal, DT_path)
 
     # path transform wavefront
 PT = transform(img, goal, transform_type='path', alpha=0.01)
 PT_path = wavefront(PT, start, goal)
-# visualize_path(img, start, goal, PT_path)
+visualize_path(img, start, goal, PT_path)
 
 
 # if __name__ == "__main__":
 #     main()
-
-print(f'recharge: {recharge}')
-
-while not game_over:
-    dis.fill(WHITE)
-    clock.tick(FPS)
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            game_over = True
-    area.drawPolygon(BLACK)
-    area.drawRectangularGrid(wx,wy)
-    pygame.display.update()
-    n = 0
-    for step in DT_path:
-        x1 = points[step[0], step[1]]
-        y1 = yForStr[step[0]]
-        if step in recharge:
-            pygame.draw.rect(dis, YELLOW, (x1 - wx / 2, y1 - wy / 2, wx, wy))
-        else:
-            pygame.draw.rect(dis, GREEN, (x1 - wx / 2, y1 - wy / 2, wx, wy),5)
-
-        if n == 1 :
-            pygame.draw.line(dis,BLACK,beg,(x1,y1))
-        time.sleep(0.1)
-        pygame.display.update()
-        n = 1
-        beg = (x1,y1)
-
-# print(f'Optimal path finding took {until -since:0.4f}')
-# print(points)
-
-
-
-
